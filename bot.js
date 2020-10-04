@@ -197,8 +197,8 @@ const fs = require('fs');
     case 'cum':
       channelSend(args, message, "Woah! That's a lot of cum!");
     break;
-    case 'nrb':
-        getHelp(args[0], message);
+    case 'help':
+      getHelp(args[0], message);
     break;
     case 'P.A.L.E.N.':
         positive(message);
@@ -225,11 +225,6 @@ const fs = require('fs');
     case 'remresp':
         removeResponse(args, message);
     break;
-    case 'bee':
-      negative(message);
-      beeCut().forEach(scene => message.channel.send(scene));
-      message.channel.send("I had virtually no rehearsal for that.", {files: [`${misc}/bee.gif`]});
-    break;
     case 'testimg':
       message.channel.send("ayy lmao", {files: [`${misc}/pepe.png`]});
     break;
@@ -248,7 +243,9 @@ const fs = require('fs');
       randomStatus(message);
     break;
     case 'announce':
-      createAnnouncement(message);
+      var retAnnounce = createAnnouncement(message);
+      logger.info(retAnnounce);
+      channelSend(retAnnounce[0], retAnnounce[1], retAnnounce[2]);
     break;
     case 'election':
       createElection(message);
@@ -279,8 +276,9 @@ const fs = require('fs');
 
   //react to a message with a random positive emoji
   function positive(message){
-    posEmojis = ['👍','❤️', '😂', '😍', '😘','😊','👌','💕','✌','😏','💪','💖','😜','🌸','💗'];//add some positive emojies hier
-    return message.react(posEmojis[Math.floor(Math.random() * posEmojis.length)]);
+    message.delete();
+    /*posEmojis = ['👍','❤️', '😂', '😍', '😘','😊','👌','💕','✌','😏','💪','💖','😜','🌸','💗'];//add some positive emojies hier
+    return message.react(posEmojis[Math.floor(Math.random() * posEmojis.length)]);*/
   }
 
   //react to a message with a negative positive emoji
@@ -305,25 +303,46 @@ const fs = require('fs');
   function getHelp(args, message){
     try{
       //check wich topic is mentioned
-      switch(args){
-        case "cp":
-          message.channel.send( "help1");
-          return positive(message)
-        break;
-        case "addresp":
-          message.channel.send( "penis");
-          return positive(message);
-        break;
-        case 'help':
-          message.channel.send('enter +nrb with a command for more information');
-        break;
+      if(args == undefined){
+        message.author.send(fs.readFileSync(`${root}/help/main.txt`, {"encoding": "utf-8"}));
+        return positive(message);
       }
-      message.channel.send( fs.readFileSync(`${root}/help/main.txt`, {"encoding": "utf-8"}));
-      return positive(message);
+      else{
+        message.author.send(fs.readFileSync(`${root}/help/${args}.txt`, {"encoding": "utf-8"}));
+        return positive(message);
+      }
     }
     catch{
-      message.channel.send("Als je je eigen hulp page niet kan laden, ben je echt de lul :sad:");
+      message.channel.send("Daar ging wel echt even iets mis. :cry: \nAls je dat even opnieuw probeert met *+help* of *+help [specifiek command]* kunnen we verder helpen. Wellicht gebruikte je niet de juiste hulpterm.");
+      helpEmbed(message);
       return negative(message);
+    }
+  }
+
+  function helpEmbed(message){
+    try{
+     const helpListEmbed = new Discord.MessageEmbed()
+      .setTitle("Beschikbare hulppagina's")
+      .setColor(0xffbe30)
+      .setDescription(listHelp());
+    message.channel.send(helpListEmbed);
+    }
+    catch(e){
+      return negative(message);
+    }
+  }
+
+  function listHelp(){
+    try{
+      helpArray = fs.readdirSync(`${root}/help/`, {withFileType: false})
+      helpResult = "";
+      helpArray.forEach(item => {
+        helpResult = helpResult + item.substring(0, item.length - 4) + "\n";
+      });
+      return helpResult;
+    }
+    catch{
+      return "Ja maat ik zit te kakken op het moment. Probeer het later ajb";
     }
   }
 
@@ -341,7 +360,7 @@ const fs = require('fs');
        announcement.addField(wishlist[3], wishlist[4]);
        wishlist.splice(3,2);
       }
-      channelSend(wishlist[0], message, announcement);
+      return [wishlist[0], message, announcement];
     }
     catch(e){
       return negative(message);
@@ -431,14 +450,15 @@ const fs = require('fs');
         message.channel.send( "Alleen .jpg, .png en .gif zijn toegestaan!");
         logger.info("Someone wanted to add something other than an image. Fucking idiots!");
       }
-
-      bericht = message.content.slice(10 + respname.length);
-      new_response = JSON.parse(`{"name" : "${respname}", "img" : "${img}"}`);
-      responseslist.push(new_response);
-      fs.writeFile(`${root}/imgrespons.json`, JSON.stringify(responseslist), function (err){
-        if (err) throw err;
-  });
-      return positive(message);;
+      else{
+        bericht = message.content.slice(10 + respname.length);
+        new_response = JSON.parse(`{"name" : "${respname}", "img" : "${img}"}`);
+        responseslist.push(new_response);
+        fs.writeFile(`${root}/imgrespons.json`, JSON.stringify(responseslist), function (err){
+          if (err) throw err;
+        });
+        return positive(message);;
+      }
     }
     catch(e){
       logger.info("error" + e);
@@ -528,11 +548,8 @@ const fs = require('fs');
      const cpEmbed = new Discord.MessageEmbed()
       .setTitle('Beschikbare pasta')
       .setColor(0xffbe30)
-      .setDescription('Een lijst met alle copypastas.')
-      .addFields(
-        { name: 'Gebruik met !cp [titel].', value: listCopyPasta() },
-      );
-    message.channel.send( cpEmbed);
+      .setDescription(listCopyPasta());
+    message.channel.send(cpEmbed);
     return positive(message);
     }
     catch(e){
@@ -561,29 +578,42 @@ const fs = require('fs');
 
 //Voting block
 //-----------------------------------------------------------------------------
-function createElection(message){
+async function createElection(message){
+  //Whole buncha variables here - might be gross to look at. Lmk if you know of a better way
   election = createAnnouncement(message);
-  logger.info(election);
+  sendChan = bot.channels.cache.get(election[0].slice(2, -1));
+  ogMsg = election[1];
+  announcement = election[2];
+
+  //Sends the poll and the emojis people can reacccccc to
+  let poll = await sendChan.send(announcement);
+  await poll.react('1️⃣');
+  await poll.react('2️⃣');
+  await poll.react('3️⃣');
+
+  //sets the collector. Time is measured in ms I THINK
+  const filter = (reaction, user) => { return reaction.emoji.name === '1️⃣' || reaction.emoji.name === '2️⃣' || reaction.emoji.name === '3️⃣'; };
+
+  //My autism makes deathcore noises
+  poll.awaitReactions(filter, { time: 60000 })
+  	.then(collected => console.log(collected.size))
+  	.catch(collected => {
+  		console.log(`After a minute, only ${collected.size} out of 4 reacted.`);
+  	});
 
 
 
+  //const pollRes = announcement.awaitReactions(filter, { time: 60000 }); //errors: ['time']
 
+/*   let resultsEmbed = new Discord.MessageEmbed()
+    .setTitle('The results are in!')
+    .setColor(0xffbe30)
+    .setDescription("Let's see how it went!")
+    .addFields(
+      { name: 'Option 1', value: `${pollRes.get('1️⃣').count-1} votes`, inline: true },
+      { name: 'Option 2', value: `${pollRes.get('2️⃣').count-1} votes`, inline: true },
+  		{ name: 'Option 3', value: `${pollRes.get('3️⃣').count-1} votes`, inline: true },
+    );
+  sendChan.send(resultsEmbed);*/
 }
 //-----------------------------------------------------------------------------
-
-
-
-
-
-//!bee, we dont talk about this
-function beeCut(){
-  var beeCount = 1;
-  var beeMayhem = new Array();
-
-  while (beeCount < 31) {
-    beePath = `${misc}/bee/bee${beeCount}.txt`;
-    beeMayhem.push(fs.readFileSync(beePath, {"encoding": "utf-8"}));
-    beeCount++;
-  }
-  return beeMayhem;
-}

@@ -1,0 +1,6 @@
+Het +announce en het +election commando doen vrijwel hetzelfde.
+Het is een systeem dat een embed in een specifiek kanaal stuurt binnen de server.
+
+Er moet altijd een kanaal, titel en omschrijving worden gegeven. Optioneel kan je oneindig veel tekstvelden toevoegen aan de embed door nog een titel en inhoudsveld te maken. Voor een werkend commando is er altijd een titel én inhoud nodig.
+
+Gebruik: +announce/+election #<kanaal> | Titel | Omschrijving | Optionele titel 1 | Optionele inhoud 1 | Optionele titel 2 | Optionele inhoud 2

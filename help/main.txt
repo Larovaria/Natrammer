@@ -2,13 +2,17 @@ Hallo, ik ben NatrammerBot, een Discordbot puur met de intentie om je helemaal o
 Ik heb een aantal functies, maar ik ben nog in ontwikkeling, dus er zullen nog functies bijkomen en sommige functies zullen niet altijd optimaal werken. Ga maar kloten met Slav Bot als je zo graag dat wil doen.
 
 Wat ik allemaal kan:
-***!addcp***: Voeg een copypasta toe. Gebruik: *!addcp [keywoord] [copypasta]*
-***!addresp***: Voeg een automatische respons toe. Gebruik: *!addresp [woord waarop ik moet reageren] [mijn antwoord]*
-***!bee***: Ya like jazz?
-***!cp***: Kots een copypasta uit. Gebruik: *!cp [keywoord]*
-***!cplist***: Kotst een lijst met alle pastakeywords :eyes:
-***!nrb***: Deze hulptekst!
-***!ping***: Pong!
-***!P.A.L.E.N***: Dropt een link naar die ene hele fijne banger.
+***+addcp***: Voeg een copypasta toe. Gebruik: *+addcp <keywoord> <copypasta>*
+***+addresp***: Voeg een automatische respons toe. Gebruik: *+addresp <woord waarop ik moet reageren> <mijn antwoord>*
+***+announce***: Maakt een aankondiging in een specifiek kanaal. Zie "+help announce" voor meer info.
+***+cp***: Kots een copypasta uit. Gebruik: *+cp <keyword>*
+***+cplist***: Kotst een lijst met alle pastakeywords :eyes:
+***+election***: Doet hetzelfde als +announce, maar voegt er een voting systeem aan toe. Zie "+help announce" voor meer info.
+***+help***: Deze hulptekst!
+***+imgresp***: Voegt een automatische respons toe als plaatje. Zie "+help responses" voor meer info.
+***+ping***: Pong!
+***+P.A.L.E.N***: Dropt een link naar die ene hele fijne banger.
+***+react***: Gooit twee reaccs op het command. Puur voor debugging.
+***+status***: Wisselt de status van NRB willekeurig
 
 Veel plezier en stik in je huig.
